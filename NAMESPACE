@@ -1,0 +1,9 @@
+import(mht)
+import(glmnet)
+import(Matrix)
+export(lassoMM,lmme,proctestMM) 
+
+S3method(refit, proctestMM)
+S3method(print, proctestMM)
+S3method(print, lassoMM)
+S3method(print, lmme)

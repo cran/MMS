@@ -1,0 +1,16 @@
+58f8184a31567640c956fe85a37eda1f *DESCRIPTION
+3469fa95f8faf57f7e4c9c2f6a4078aa *NAMESPACE
+ec2d208b9817ea9484cd5221721e7bd3 *R/MM2function.R
+389d2b6ad8ff37c08bcf0ec78f78f02e *R/lassoMMfunction.R
+ba3fe53bf2e3ce453851cd7a51c80081 *R/lmme.R
+4a9a9e485f4d2de0d9ff98c47a9d0a43 *R/print.lassoMM.R
+532fc046683ac1aecaa601e1184a571c *R/print.lmme.R
+a393c59cbfbef3697e02d3d267738318 *R/print.proctestMM.R
+e4f763641cd6227e2045e23e4dfa175f *R/proctestMMfunction.R
+294b1bd82f752b1fecf6b776207713f2 *R/refit.proctestMM.R
+8ec455aca8fb3ab2947c32da7570a017 *R/zzz.R
+a4dc2fa7c563306f97cf81f785ec9ccc *man/MMS-package.Rd
+d95668d21711c011f70b3fa6e08999de *man/lassoMM.Rd
+13598a61f2b6b8d027358d2e149e30b4 *man/lmme.Rd
+dfdbc75e8d75fdc55a8b087249eaaabf *man/proctestMM.Rd
+a1d6cb8c268386346b14c316ea19e455 *man/refit.proctestMM.Rd
