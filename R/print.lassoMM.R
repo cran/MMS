@@ -11,7 +11,9 @@ function(x,...) {
   	cat("which are:",which(x$beta!=0),"\n\n")
   	cat("\n")
   	
-cat("Variance of the random effects:",x$sigma_u,"\n")
+cat("Variance of the random effects:\n")
+print(x$Psi)
+cat("\n")
 cat("Variance of the residuals", x$sigma_e,"\n")
 #cat("-------------------------------\n\n")
 }

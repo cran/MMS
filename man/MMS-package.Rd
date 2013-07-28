@@ -4,19 +4,22 @@
 \title{
 Fixed effects Selection in Linear Mixed Models}
 \description{
-This package performs fixed effects selection in a linear mixed model
+This package performs fixed effects selection in linear mixed models
 }
 
 \details{
 \tabular{ll}{
 Package: \tab MMS \cr
 Type: \tab Package \cr
-Version: \tab 1.0 \cr
-Date: \tab 2012-05-08 \cr
+Version: \tab 2.0 \cr
+Date: \tab 2013-08-09 \cr
 License: \tab GPL-3 \cr
-LazyLoad: \tab yes \cr
 }
-Two major functions: \code{\link{lassoMM}} and \code{\link{proctestMM}}. The first performs a L1-penalization of the log-likelihood of the marginal model. The  last is a combination of the \code{\link{procbol}} method of the \code{\link{mht-package}} and a multicycle ECM algorithm.}
+Two major functions:\cr
+\code{\link{lassoMM}} performs fixed effects selection in linear mixed models through a L1-penalization of the log-likelihood of the marginal model. The method optimizes a criterion via a multicycle ECM algorithm. \cr
+\code{\link{proctestMM}} performs fixed effects selection in linear mixed models through a modification of the previous algorithm which allows the use of any variable selection method developed in linear models. 
+It is a combination of the \code{\link{procbol}} method from the \code{\link{mht-package}} and the modified algorithm.}
+
 \author{
 Florian Rohart \cr
 Maintainer: florian.rohart@gmail.com
@@ -25,8 +28,8 @@ Maintainer: florian.rohart@gmail.com
 
 \references{
 Multiple hypotheses testing for variable selection; F. Rohart \cr
-Model-consistent sparse estimation through the bootstrap; F. Bach \cr
-Fixed effects selection in high dimensional linear mixed models; F. Rohart & al }
+Selection of fixed effects in high dimensional linear mixed models using a multicycle ECM algorithm; F. Rohart & al \cr
+}
 
 
 \examples{
@@ -55,9 +58,11 @@ epsilon=rnorm(120)
 y <- numeric(n)
 for (k in 1:n) y[k] <- x[k,]\%*\%beta + t(z[k,])\%*\%bi[,k] + epsilon[k]
 ######
-fit1=lassoMM(x,y,z,grp,mu=0.2,var_nonselect_fixed=1,var_nonselect_random=c(1,2),showit=TRUE)
-#fit=lassoMM(x,y,z,grp,mu=0.2,var_nonselect_fixed=1,var_nonselect_random=c(1,2),showit=FALSE)
-fit2=proctestMM(x,y,z,grp,var_nonselect_fixed=1,var_nonselect_random=c(1,2),alpha=0.1,maxordre=15,showordre=TRUE,showit=TRUE,showresult=TRUE)
-#fit2=proctestMM(x,y,z,grp,var_nonselect_fixed=1,var_nonselect_random=c(1,2),alpha=0.1,maxordre=15,showordre=FALSE,showit=FALSE,showresult=FALSE)
+fit0=lmme(x[,1:4],y,z,grp)
+fit1=lassoMM(x,y,z,grp,mu=0.2,fix=1,rand=c(1,2))
+#fit1=lassoMM(x,y,z,grp,mu=0.2,fix=1,rand=c(1,2),showit=TRUE)
+
+fit2=proctestMM(x,y,z,grp,fix=1,rand=c(1,2),alpha=0.1,num=15)
+#fit2=proctestMM(x,y,z,grp,fix=1,rand=c(1,2),alpha=0.1,num=15,show=c(1,1,1))
 }
 }

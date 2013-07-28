@@ -11,7 +11,9 @@ function(x,...) {
     cat("Number of relevant fixed-effects:",sum(x$beta[,i]!=0),"\n")
   	cat("which are:",which(x$beta[,i]!=0),"\n\n")
   	
-cat("Variance of the random effects:",x$sigma_u[i,],"\n")
+cat("Variance of the random effects:\n")
+print(x$Psi[,,i])
+cat("\n")
 cat("Variance of the residuals", x$sigma_e[i],"\n\n")
 cat("-------------------------------\n\n")
 }

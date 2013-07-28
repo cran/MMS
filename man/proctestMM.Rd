@@ -2,10 +2,10 @@
 \alias{proctestMM}
 \docType{package}
 \title{
-Multiple testing procedure for variable selection}
+Multiple testing procedure for variable selection in linear mixed models}
 \description{
-Performed a multiple hypotheses testing in a linear mixed model}
-\usage{proctestMM(data,Y,z,grp,var_nonselect_fixed,var_nonselect_random,alpha,step,maxordre,choix_ordre=c("bolasso","pval","pval_hd"),m,showordre,IT,maxq,showtest,showresult,showit,speed)
+Performs a multiple hypotheses testing in linear mixed models}
+\usage{proctestMM(data,Y,z,grp,D,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed)
 }
 
 \arguments{
@@ -13,24 +13,27 @@ Performed a multiple hypotheses testing in a linear mixed model}
 \item{Y}{Response variable of length n.}
 \item{z}{Random effects matrix. Of size n*q.}
 \item{grp}{Grouping variable of length n.}
-\item{var_nonselect_fixed}{Number of variables which are not submitted to selection. They have to be in the first columns of data. Default is 1, the selection is not performed on the intercept.}
-\item{var_nonselect_random}{A vector of length q: each entry k is the position of the random effects number k in the data matrix, 0 otherwise. If \code{z} contains variables that have both a fixed and a random effect, it is advised to not submit them to selection.}
+\item{D}{Logical value. If TRUE, the random effects are considered to be independent, i.e. \code{Psi} is a diagonal matrix. D=TRUE should be used with nested grouping factors.}
+\item{fix}{Number of variables which are not submitted to selection. They have to be in the first columns of data. Default is 1, the selection is not performed on the intercept.}
+\item{rand}{A vector of length q: each entry k is the position of the random effects number k in the data matrix, 0 otherwise. If \code{z} contains variables that have both a fixed and a random effect, it is advised to not submit them to selection.}
 \item{alpha}{A user supplied type I error sequence. Default is (0.1,0.05).}
 \item{step}{The algorithm performs at most \code{step} iterations. Default is 3000.}
-\item{maxordre}{Number of variables one wishes to order. Default is min(n-1,p-1,30).}
-\item{choix_ordre}{Three possible algorithms to order the variables. "bolasso" uses the regularization path of the Bolasso technique, "pval" uses the p-values from the test of nullity of the coefficients obtained from a linear regression on the full set of variables (only when p<n), the last "pval_hd" makes regression on one variable at a time. Default is "bolasso".}
+\item{num}{Number of variables one wishes to order. Default is min(n-1,p-1,30).}
+\item{ordre}{Three possible algorithms to order the variables. "bolasso" uses the regularization path of the Bolasso technique, "pval" uses the p-values from the test of nullity of the coefficients obtained from a linear regression on the full set of variables (only when p<n), the last "pval_hd" makes regression on one variable at a time. Default is "bolasso".}
 \item{m}{Number of bootstrapped iteration of the Lasso. Only use if the algorithm is set to "bolasso". Default is m=10.}
-\item{showordre}{Logical value. If TRUE, show the ordered variables at each step of the algorithm. Default is FALSE.}
+\item{show}{Vector of logical values, \code{show=(showordre,showresult,showit)}. Default is (0,0,0). If \code{showordre}=TRUE, show the ordered variables at each step of the algorithm.
+if \code{showresult}=TRUE, show the value of the statistics and the estimated quantile at each step of the procedure; if \code{ordre}=bolasso.
+if \code{showit}=TRUE, show the iterations of the algorithm.} 
 \item{IT}{Number of simulations in the calculation of the quantile. Default is 10000.}
 \item{maxq}{Number of maximum multiple hypotheses testing to do. Default is min(log(min(n,p)-1,2),5).}
-\item{showtest}{Logical value. Only use if the algorithm is set to "bolasso". if TRUE, show the number of regularization parameters tested to show the advancement of the dyadic algorithm. Default is FALSE.}
-\item{showresult}{Logical value. if TRUE, show the value of the statistics and the estimated quantile at each step of the procedure. Default is FALSE.}
-\item{showit}{Logical value. If TRUE, shows the iterations of the algorithm. Default is FALSE.}
-\item{speed}{Logical value. If TRUE, the algorithm is speeded up once the criterion convergence in \code{beta} and \code{u} is fulfilled. }
+\item{speed}{Logical value. If TRUE, the algorithm is speeded up once the criteria convergence in \code{beta} and \code{u} are fulfilled. }
 }
 
 
-\details{proctestMM is a combination of the \link{procbol} function of the \link{mht-package} with an algorithm designed to perform fixed effects selection in a linear mixed model.
+\details{\code{proctestMM} performs fixed effects selection in linear mixed models. 
+It is a combination of the \link{procbol} function from the \link{mht-package} with the algorithm used in the \link{lassoMM} function;
+so you might want to have a look at the help of \link{procbol}.
+
 }
 
 \value{A 'proctestMM' object is returned for which \code{refit} is available.
@@ -38,13 +41,14 @@ Performed a multiple hypotheses testing in a linear mixed model}
 \item{beta}{The estimated vector of fixed effects coefficients. Each row concern a specific user level alpha.}
 \item{fitted.values}{Fitted values calculated with the fixed effects and the random effects.}
 \item{u}{Matrix with #alpha columns. Each column is the concatenation of the estimated random effects (u_1',...,u_q')' for the user level alpha.}
-\item{sigma_u}{Variance of the random effects. It is a vector of length q.}
+\item{Psi}{Variance of the random effects. Matrix of dimension q*q.}
 \item{sigma_e}{Variance of the residuals.}
 \item{it}{Number of iterations of the algorithm.}
 \item{quantile}{Array of all the estimated quantiles calculated during the procedure.}
 \item{ordrebeta}{All different order that has been used during the procedure.}
+\item{converge}{Did the algorithm converge?}
 \item{call}{The call that produced this object.}
-\item{arg}{List of all the arguments of the function.}
+\item{arg}{List of all the arguments of the function (used to refit the function).}
 }
 
 \seealso{\code{\link{procbol}}, \code{\link{refit.proctestMM}}}
@@ -76,6 +80,7 @@ y <- numeric(n)
 for (k in 1:n) y[k] <- x[k,]\%*\%beta + t(z[k,])\%*\%bi[,k] + epsilon[k]
 
 ########
-fit=proctestMM(x,y,z,grp,var_nonselect_fixed=1,var_nonselect_random=c(1,2),alpha=0.1,maxordre=15,showordre=TRUE,showit=TRUE,showresult=TRUE)
+fit=proctestMM(x,y,z,grp,D=0,fix=1,rand=c(1,2),alpha=0.1,num=15)
+#fit=proctestMM(x,y,z,grp,D=0,fix=1,rand=c(1,2),alpha=0.1,num=15,show=c(1,1,1))
 }
 }

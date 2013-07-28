@@ -1,4 +1,4 @@
-MM2=function(data2,yhat,m,sigma,maxqdep,maxordre,var_nonselect,random,showtest,showit,showresult,correspondance,ORDREBETA2,indice,aV2,choix_ordre,alpha,alph,IT)
+MM2=function(data2,yhat,m,sigma,maxqdep,num,var_nonselect,random,showit,showresult,correspondance,ORDREBETA2,indice,aV2,choix_ordre,alpha,alph,IT)
 {#####################
 # MM2 commence ###
 #####################
@@ -7,21 +7,53 @@ ntot=nrow(data2)
 p=ncol(data2)
 #on ordonne les variables pour avoir les var_nonselect_fixed en premier et ensuite les var_nonselect_random!=0, pour pouvoir faire les test correctement sans selection var_nonselect=sum des deux
 
-ordre=dyadiqueordre(data2,yhat,m,maxordre,var_nonselect=var_nonselect,showtest=showtest,showordre=FALSE,random=random)# donne l'ordre (dans ordre) et le nombre de fois ou l'algo a redemarré (dans prob)	
+if(choix_ordre=="pval")
+{
+	if(p<ntot) 	#on calcule pval avec une seule regression comportant toutes les variables
+	{reg=lm(yhat~data2-1)
+		a=summary(reg)$coefficients[,4]
+		a[1:var_nonselect]=0	#on ne selectionne pas l'intercept
+		b=sort(a,index.return=TRUE)
+		ORDREBETA=b$ix[1:num]
+		XI_ord=data2[,b$ix] #on a ainsi les XI ordonnÈes
+		if(showit){print(b$ix)}
+		}else{		#on calcule pval avec FDR2: une regression pour chaque variable
+			print("p>n, the order 'pval' is not possible, 'pval_hd' is used instead")
+			choix_ordre="pval_hd"
+			}
+}
 
+if(choix_ordre=="pval_hd")
+{a=numeric(0)
+	for(i in 1:p)
+	{
+		reg=lm(yhat~data2[,i]-1)
+		c=summary(reg)$coefficients[,4]
+		a=c(a,c)
+	}
+	a[1:var_nonselect]=0	#on ne selectionne pas l'intercept
+	b=sort(a,index.return=TRUE)
+		ORDREBETA=b$ix[1:num]
+	XI_ord=data2[,b$ix] #on a ainsi les XI ordonnÈes
+	if(showit){print(b$ix)}
+}
+
+if(choix_ordre=="bolasso")
+{
+ordre=dyadiqueordre(data2,yhat,m,maxordre=num,var_nonselect=var_nonselect,showtest=FALSE,showordre=FALSE,random=random)# donne l'ordre (dans ordre) et le nombre de fois ou l'algo a redemarré (dans prob)	
 	b=ordre$ordre
-
 bb=correspondance[2,b]
 #mean that data2[ordre]=data[correspondance[2,ordre]]=data[,bb]
-
 if(showit){print(bb)}
-	ORDREBETA=bb[1:maxordre]
-
+	ORDREBETA=bb[1:num]
 #on complete l'ordre par les variables restantes
 	a=match(1:p,b)
 	b=c(b,(1:p)[which(is.na(a))])
 	
 XI_ord=data2[,b] #on a ainsi les XI ordonnées dans XI_ord
+}
+
+
 
 dec=decompbaseortho(XI_ord)
 #on rajoute dans nonind2 les dernieres variables, celle qui n'ont pas d'utilitÈs puisque dans Rn
@@ -60,7 +92,7 @@ if(ktest>indice2)
 	I=numeric(0)
 	TT=0
 	#A=numeric(0)
-	while((TT==0)&&(i<abc))#dim(ORDREBETA2)=abc*maxordre
+	while((TT==0)&&(i<abc))#dim(ORDREBETA2)=abc*num
 	{i=i+1
 	a=numeric(0)
 	K=numeric(0)
@@ -68,12 +100,11 @@ if(ktest>indice2)
 	{a=c(a,sum(ORDREBETA[j]==ORDREBETA2[i,1:nbr_test]))}
 	
 	if((sum(a)==nbr_test)&&(indice[2,i]>=ktest)&&(indice[1,i])<=ktest){TT=1
-	#	K=c(K,ktest)
 		I=c(I,i)}
 	}
 
 	if(length(I)!=0)
-	{	aV[,,ktest]=aV2[,,ktest,I]#get(paste("aV",I,sep="_"))[,,ktest]
+	{	aV[,,ktest]=aV2[,,ktest,I]
 		calcul=c(calcul,0)#on met 0 si le quantile est deja calculé
 		}else{
 		if(showresult){print(paste("ktest=",ktest))}
@@ -124,10 +155,8 @@ if(sum(calcul)!=0)
 	aV3[,,,nrow(ORDREBETA2)]=aV
 	aV2=aV3
 
-	#aV3[,,,nrow(ORDREBETA2)]=aV#assign(paste("aV",compteurordre,sep="_"),aV)
 	indice=cbind(indice,c(var_nonselect-sum(nonind<=var_nonselect),NBR_effect))#c(indice,NBR)
 	
-	#je veux qu'on SI on a calculer un quantile d'un ktest en plus, on remplace l'existant par le nouveau avec indice superieur
 	}	
 	ind=ORDREBETA[1:NBR]
 

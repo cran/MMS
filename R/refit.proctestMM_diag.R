@@ -1,101 +1,68 @@
-#procbolMM=function(data,...){UseMethod("procbolMM")}
-proctestMM=function(data,Y,z,grp,var_nonselect_fixed,var_nonselect_random,alpha,step,maxordre,choix_ordre=c("bolasso","pval","pval_hd"),m,showordre,IT,maxq,showtest,showresult,showit,speed)
-{
-#-----------------------------------	
-#	data=matrice data, the first column should be 1, for the intercept
-#	Y=observation	Y=data*beta
-#	z=random effects matrix, n*q, c'est la matrice à partager en transformer en matrice de structure Z. Si des effets aléatoires sont aussi des colonnes de data, elles doivent etre en premier dans z et il est conseillé de les dénombrer dans var_nonselect_random
-#	grp= groups, q*n, on autorise plusieurs structures, donc q lignes
-#	var_nonselect_fixed= le nombre de variables qu'on ne veut pas séléctionner, ce sont les premières colonnes dans data
-#	var_nonselect_random= si z contient des variables à la fois fixes et aléatoires, il est conseillé de ne pas les soumettre à séléction. un vecteur de longueur q, 0 si la variable n'est pas fixe+aléatoire, sa position dans data sinon.
+#refit=function(object,...){UseMethod("refit")}
 
-#	alpha=erreur de première espèce du test
-#	maxordre= nombre de variables max qu'on ordonne
-#	choix_ordre=avec quelle méthode on ordonne (pval, pval_hd ou bolasso)
-#	m=nombre d'iteration lasso pour le bolasso
-#	showordre=affiche l'ordre au fur et à mesure
-#	IT=nombre de simulations pour le calcul du quantile
-#	maxq=nombre max d'hypotheses alternative testees
-#	showtest=affiche le nombre de mu tester dans l'algorithme d'ordre
-#	showresult=affiche les resultats des tests
-#	showit=affiche les itérations de l'algorithme
-#-----------------------------------------
-	
-	
-	#probleme: si random=1:3,donc ordre= (1 2 3) 34 etc et qu'on supprime le 3 des random mais qu'il reste en 3eme position une fois ordonné, on zap le calcul du quantile pour l'ordre (1,2) 3 etc, a vérifier
-	
+refit.proctestMM_diag=function(object,Ynew,z,grp,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed,...)
+{
+
+	#même Z et grp que object, seul le Y est différent
+data=object$data$X
+if(missing(z)) z=object$data$z
+if(missing(grp)) grp=object$data$grp
 ntot=nrow(data)	
 p=ncol(data)
 q=ncol(z)
 
-	#safety
-	if(length(Y)!=ntot){stop(" 'data' and 'Y' must have the same length ")}
-	if(nrow(grp)!=q){stop("grp has to have q row(s)")}
-	if(missing(z)||missing(grp)){stop("error, missing grp")}
-	if(missing(m)){m=10}
-	if(missing(maxordre)){maxordre=min((ntot-1)/2,(p-1)/2,30)}
-	if(missing(alpha)){alpha=c(0.1)}
-	alpha=sort(alpha,decreasing=TRUE)
-	if(missing(choix_ordre)){choix_ordre="bolasso"}
-	if(missing(IT)){IT=1000}
-	if(missing(maxq)){maxq=min(log(min(ntot,p)-1,2),5)}
-	if(missing(showtest)){showtest=FALSE}
-	if(missing(showordre)){showordre=FALSE}
-	if(missing(showresult)){showresult=FALSE}
-	if(missing(showit)){showit=FALSE}	
-	if(missing(var_nonselect_random)){var_nonselect_random=rep(0,q)}
-	if(missing(step)){step=3000}
-	if(missing(speed)){speed=1}
+# #on reprend les mêmes argument que dans object$arg
+if(missing(fix)) fix=object$arg$fix
+if(missing(rand)) {rand_sauv=object$arg$rand_sauv}else{rand_sauv=rand}
+if(missing(num)) num=object$arg$num
+if(missing(ordre)) ordre=object$arg$ordre
+	if(!ordre%in%c("bolasso","pval","pval_hd")) stop('ordre has to be one of "bolasso","pval","pval_hd" ')
+if(missing(m)) m=object$arg$m
+if(missing(IT)) IT=object$arg$IT
+if(missing(maxq)) {maxqdep=object$arg$maxqdep}else{maxqdep=maxq}
+if(missing(show)) show=object$arg$show
+		showordre=show[1]
+		showresult=show[2]
+		showit=show[3]	
+if(missing(step)) step=object$arg$step
+if(missing(speed)){speed=1}
+choix_ordre=ordre
 
-#verifier que var_nonselect_random est en accord entre z et data
-if(length(var_nonselect_random)!=ncol(z)){stop("var_nonselect_random has to be of length nrow(grp)")}
+	if(missing(Ynew)){stop('Ynew is missing')}
+	if(length(Ynew)!=ntot){stop(paste(" 'data' and 'Ynew' must have the same length:",ntot))}
+	
+alpha=as.numeric(colnames(object$fitted.values))  	     
 
-I=which(var_nonselect_random!=0)
-for(k in I)
-{if(sum((z[,k]-data[,var_nonselect_random[k]])^2)>10^(-10)){stop(paste('Are you sure that random effect number',k,' is in position',var_nonselect_random[k],'of the data matrix?'))}
+dec=decompbaseortho(data)
+nonind=dec$nonind
+U=dec$U
+if(p>(ntot+length(nonind)))
+{nonind2=c(nonind,(ntot+1+length(nonind)):p)	
+	Uchap=U[,-nonind2]}else{if(length(nonind)==0){Uchap=U}else{Uchap=U[,-nonind]}}
+dim_X=ncol(Uchap)			#nombre de variables utiles
+
+if(nrow(object$ordrebeta)==1)#on a juste fait un procbol, donc les quantiles sont dans un tableaux de dim alpha*maxq*NBR
+{
+aV2=array(0,c(length(alpha),dim(object$quantile)[2],dim_X,1)) #on y met tous les quantiles
+aV2[,,1:dim(object$quantile)[3],1]=object$quantile
+
+}else{aV2=object$quantile}
+
+	Y=Ynew
+	ORDREBETA2=object$ordrebeta
+	compteurordre=nrow(ORDREBETA2)
+	indice2=NULL
+	for(i in 1:nrow(object$ordrebeta))
+	{j=1
+	while(sum(aV2[,,j,i]^2)==0) 
+	{j=j+1}
+	k=j
+	while(sum(aV2[,,k,i]^2)!=0) 
+	{k=k+1}
+	k=k-1
+	indice2=cbind(indice2,c(j,k))
 	}
-
-
-#		-------------------------------------
-#			on scale la matrice de départ
-#		-------------------------------------
-
-#si la matrice de depart ne contient pas l'intercept (colonne de 1) on la rajoute et on rajoute 1 dans var_nonselect_fixed s'il n'etait pas manquant
-if(sum(data[,1])==ntot){data=cbind(data[,1],scale(data[,-1])*sqrt(ntot)/sqrt(ntot-1))
-		data[which(is.na(data))]=0
-	intercept=TRUE
-			}else{
-				message("intercept has been added")
-				data=scale(data)*sqrt(ntot)/sqrt(ntot-1)
-				data[which(is.na(data))]=0
-				data=cbind(1,data)
-				intercept=FALSE
-				p=p+1
-			}
-
-if(missing(var_nonselect_fixed)){var_nonselect_fixed=1
-}else{if(!intercept){var_nonselect_fixed=var_nonselect_fixed+1}}			
-
-if(var_nonselect_fixed<=0){stop("var_nonselect has to be positive, the intercept is not submitted to selection, not implemented in glmnet..")}
-
-
-if(!intercept){var_nonselect_random[var_nonselect_random!=0]=var_nonselect_random[var_nonselect_random!=0]+1}
-
-
-#on met a 0 les variables qui resteront non selectionnées car deja dans var_nonselect_fixed
-for(i in var_nonselect_random)
-{if(i<=var_nonselect_fixed)
-	{var_nonselect_random[which(var_nonselect_random==i)]=0}}
-
-
-maxordre=min(ntot-1,p-1,maxordre+!intercept)
-maxqdep=min(maxq,log(min(ntot,p)-1,2))
-
-
-ntot=nrow(data)
-p=ncol(data)
-
-
+	
 #construction des Z_i à partir de z et grp
 grp=rbind(grp)
 for(k in 1:q)
@@ -123,82 +90,54 @@ BETA_HAT=matrix(0,nrow=p,ncol=length(alpha))
 kchap=numeric(0)
 SIGMAU=numeric(0)
 SIGMAE=numeric(0)
-ORDREBETA2=numeric(0)
 indice=numeric(0)
 compteur=0
-compteurordre=0
-var_nonselect_random_sauv=var_nonselect_random
-
-	##############################################################################################################
+rand=rand_sauv
+		
+##############################################################################################################
 	#################################### Initialisation beta #####################################################
 	##############################################################################################################	
-	a=table(var_nonselect_random)
+	a=table(rand)
 	b=names(a)[names(a)!=0]
 	set_random=b#[b!=1]#on enleve l'intercept, parce qu'il sera tjs dans les fixes, on ne le compte pas dans fixes+aleatoire
-	var_nonselect=var_nonselect_fixed+length(set_random)
+	var_nonselect=fix+length(set_random)
 	
 	correspondance=1:p
 	if(length(set_random)>0)
-	{a=c(1:var_nonselect_fixed,as.numeric(set_random),(1:p)[-c(1:var_nonselect_fixed,as.numeric(set_random))])
-	}else{a=c(1:var_nonselect_fixed,(1:p)[-c(1:var_nonselect_fixed)])}
+	{a=c(1:fix,as.numeric(set_random),(1:p)[-c(1:fix,as.numeric(set_random))])
+	}else{a=c(1:fix,(1:p)[-c(1:fix)])}
 		correspondance=rbind(correspondance,a)
 	data2=data[,correspondance[2,]]		
 		
-		if(showit){print("initialization")}
-
-	a=procbol(data2,Y,sigma=q,m=m,maxordre=maxordre,choix_ordre=choix_ordre,var_nonselect=var_nonselect,maxq=maxq,alpha=alpha,showordre=FALSE,showresult=showit)
-	compteurordre=compteurordre+1
-	b=a$ordre
-	bb=correspondance[2,b]
-
-	if(showit){print(bb)}
-		ORDREBETA2=rbind(ORDREBETA2,bb[1:maxordre]) 
-		
-	#on cherche dans quel espace vit data	
-	XI=data2[,a$ordrebeta]
-	dec=decompbaseortho(XI)
-	#on rajoute dans nonind2 les dernieres variables, celle qui n'ont pas d'utilitÈs puisque dans Rn
-	nonind=dec$nonind
-	U=dec$U
-	if(p>(ntot+length(nonind)))
-	{nonind2=c(nonind,(ntot+1+length(nonind)):p)	
-		Uchap=U[,-nonind2]
-	}else{
-		if(length(nonind)==0){Uchap=U}else{Uchap=U[,-nonind]}
-			}
-	dim_X=ncol(Uchap)			#nombre de variables utiles
-	aV=array(0,c(length(alpha),maxqdep,dim_X)) #on y met tous les quantiles
-	#if(length(a$relevant_var[alph,])>0){
-	
-	NBR_effect=length(which(a$coefficients!=0))
-	aV[,,1:NBR_effect]=array(a$quantile,c(length(alpha),maxqdep,NBR_effect))#}
-	assign(paste("aV",compteurordre,sep="_"),aV)
-	indice=rbind(var_nonselect-sum(nonind<=var_nonselect),NBR_effect)
-	
-	ind_sauv2=correspondance[2,a$relevant_var[1,]]
-	ind_sauv=ind_sauv2
-	if(length(alpha>1))
-	{	
-		for(alph in 1:length(alpha))
-		{indi=correspondance[2,a$relevant_var[alph,]]
-		indi2=c(indi,rep(0,length(ind_sauv2)-length(indi)))
-		ind_sauv=rbind(ind_sauv,indi2)}
-	}
 a=matrix(runif(ntot*max(m,2),0,ntot),nrow=ntot)
 random=ceiling(a)
 		
 UCHAP=NULL
 y.fitted=NULL
 COMPTEUR=NULL
+PSI=array(0,c(q,q,length(alpha)))
 for(alph in 1:length(alpha)) #boucle sur alpha
 {
+	
+	#initialisation
+	if(showit){print("initialization")}
+mm2=MM2(data2=data2,yhat=Y,m=m,sigma=q,maxqdep=maxqdep,num=num,var_nonselect=var_nonselect,random=random,showit=showit,showresult=showresult,correspondance=correspondance,ORDREBETA2=ORDREBETA2,indice=indice2,aV2=aV2,choix_ordre=choix_ordre,alpha=alpha,alph=alph,IT=IT)
+	
+aV2=mm2$aV2
+ORDREBETA2=mm2$ORDREBETA2
+ind=mm2$ind
+indice2=mm2$indice
+compteurordre=mm2$compteurordre	
+		if(showresult){print(paste("number of selected variables:",length(ind)))}
+
+	
 	#on cherche le nombre de variables fixes+aléatoires
-var_nonselect_random=var_nonselect_random_sauv
-a=table(var_nonselect_random)
+rand=rand_sauv
+a=table(rand)
 b=names(a)[names(a)!=0]
 set_random=b#[b!=1]#on enleve l'intercept, parce qu'il sera tjs dans les fixes, on ne le compte pas dans fixes+aleatoire
 
-var_nonselect=var_nonselect_fixed+length(set_random)
+var_nonselect=fix+length(set_random)
 
 	#on initialise tout
 	sigma_uinit=rep(1,q)
@@ -206,20 +145,18 @@ var_nonselect=var_nonselect_fixed+length(set_random)
 	Iq=1:q #set des effets aléatoire non nul
 	nonIq=numeric(0)
 	
-	#sigma_e=1
 	##############################################################################################################
 	#################################### Initialisation beta #####################################################
 	##############################################################################################################	
 	
-	ind=ind_sauv[alph,]
 	beta_hat=matrix(0,p)
 	if(length(ind)>0){
 		reg=lm(Y~data[,ind]-1)
 		
 		beta_hat[ind]=reg$coefficients
 		beta_hat[-which(beta_hat!=0)]=0}
-	sigma_e=as.vector(var(Y-data%*%beta_hat))
-			
+		sigma_e=as.vector(var(Y-data%*%beta_hat))
+
 	sum1=10
 	sum2=rep(10,q)
 	condition=1
@@ -229,7 +166,7 @@ var_nonselect=var_nonselect_fixed+length(set_random)
 	compteur_ijk=0
 	converge=TRUE
 	delete=1
-		
+
 	while(((sum1>10^-8)||(sum(sum2)>10^-8))||(abs(condition)>10^-6))
 	{
 		compteur_ijk=compteur_ijk+1
@@ -237,8 +174,6 @@ var_nonselect=var_nonselect_fixed+length(set_random)
 		compteur=compteur+1
 		#on cherche beta en faisant un lasso a sigma_u et u fixé
 		
-
-
 ##############################################################################################################
 #################################### E-step ##########################################################
 ##############################################################################################################
@@ -247,7 +182,7 @@ if(length(Iq)>0)
 d=numeric(0)
 for(k in Iq)
 {d=c(d,rep(as.vector(sigma_u)[k],get(paste("N",k,sep="_"))))}
-G1=Matrix(diag(1/d),sparse=TRUE)
+G=Matrix(diag(d),sparse=TRUE)
 	
 if(delete==1){
 Z=numeric(0)
@@ -256,6 +191,7 @@ for(k in Iq)
 N=ncol(Z)
 Z=Matrix(Z,sparse=TRUE)}
 delete=0
+G1=solve(G)
 
 
 yhat=Y-data%*%beta_hat
@@ -263,6 +199,7 @@ a=t(Z)%*%Z/sigma_e+G1
 S1=solve(a)
 uchap3=S1%*%t(Z)%*%yhat/sigma_e
 if(length(uchap3)!=length(uchap)){uchap=matrix(0,N)	}
+sum2=sum((uchap3-uchap)^2)
 uchap=uchap3
 yhat=as.vector(Y-Z%*%uchap)
 }else{yhat=Y}
@@ -274,25 +211,22 @@ if(((((sum1>10^-8)|(sum(sum2)>10^-8)))&(speed==1))|(speed==0)|(delete==1))
 {	
 correspondance=1:p
 if(length(set_random)>0)
-{a=c(1:var_nonselect_fixed,as.numeric(set_random),(1:p)[-c(1:var_nonselect_fixed,as.numeric(set_random))])
-	}else{a=c(1:var_nonselect_fixed,(1:p)[-c(1:var_nonselect_fixed)])}
+{a=c(1:fix,as.numeric(set_random),(1:p)[-c(1:fix,as.numeric(set_random))])
+	}else{a=c(1:fix,(1:p)[-c(1:fix)])}
 correspondance=rbind(correspondance,a)
 data2=data[,correspondance[2,]]		#les var_nonselect premières colonnes sont les fixed et les random
 #mean that data2[ordre]=data[correspondance[2,ordre]]=data[,bb]
 
 	#on ne calcule que les manquants
-			#source("MM2.R")
-aV2=array(0,c(dim(aV)[1],dim(aV)[2],dim(aV)[3],nrow(ORDREBETA2)))
-aV2[,,,1:nrow(ORDREBETA2)]=aV
-	
-mm2=MM2(data2=data2,yhat=yhat,m=m,sigma=sigma_e,maxqdep=maxqdep,maxordre=maxordre,var_nonselect=var_nonselect,random=random,showtest=FALSE,showit=showit,showresult=showresult,correspondance=correspondance,ORDREBETA2=ORDREBETA2,indice=indice,aV2=aV2,choix_ordre=choix_ordre,alpha=alpha,alph=alph,IT=IT)
+mm2=MM2(data2=data2,yhat=yhat,m=m,sigma=sigma_e,maxqdep=maxqdep,num=num,var_nonselect=var_nonselect,random=random,showit=showit,showresult=showresult,correspondance=correspondance,ORDREBETA2=ORDREBETA2,indice=indice2,aV2=aV2,choix_ordre=choix_ordre,alpha=alpha,alph=alph,IT=IT)
 
-aV=mm2$aV2
+aV2=mm2$aV2
 ORDREBETA2=mm2$ORDREBETA2
 ind=mm2$ind
-indice=mm2$indice
+indice2=mm2$indice
 compteurordre=mm2$compteurordre	
 }
+	
 
 if(showresult){print(paste("number of selected variables:",length(ind)))}
 beta_hat2=matrix(0,p)
@@ -303,7 +237,6 @@ if(length(ind)>0){
 	beta_hat2[ind]=reg$coefficients
 	beta_hat2[-which(beta_hat2!=0)]=0
 	sum1=sum((beta_hat2-beta_hat)^2)
-	#print(sum1)
 	}else{sum1=10}
 beta_hat=beta_hat2
 
@@ -350,7 +283,7 @@ for(k in Iq)
 	for(j in Iq)
 	{B=cbind(B,get(paste("c",k,j,sep="")))}
 	A=rbind(A,B) 
-	}
+	}	
 A=Matrix(A)
 g1=solve(A)
 
@@ -388,14 +321,14 @@ for(k in Iq)
 	if(var(get(paste("uchap",k,sep="_")))<10^-4*(min(sigma_e,1))){sigma_u[k]=0
 #if (sigma_u[k]<10^-10){sigma_u[k]=0  #regarder si ce ne serait pas mieux de mettre a zero si le vecteur est a 0, parce que si =une constante?
 		Iq=Iq[-which(Iq==k)]
-		var_nonselect_random[k]=0
+		rand[k]=0
 		delete=1
 			
-		a=table(var_nonselect_random)
+		a=table(rand)
 		b=names(a)[names(a)!=0]
 		set_random=b#[b!=1]#on enleve l'intercept, parce qu'il sera tjs dans les fixes, on ne le compte pas dans fixes+aleatoire
 
-		var_nonselect=var_nonselect_fixed+length(set_random)
+		var_nonselect=fix+length(set_random)
 		nonIq=c(nonIq,k)
 		sum2[k]=0
 if(abs(mean(get(paste("uchap",k,sep="_"))))<10^-5){assign(paste("uchap",k,sep="_"),rep(0,get(paste("N",k,sep="_"))))}		
@@ -413,10 +346,6 @@ if((length(ind)==0)&&(length(Iq)==0)){break}
 	if(compteur_ijk>step){message("Algorithm did not converge..")
 		converge=FALSE
 	break}
-# print(var_nonselect_random)
-# print(set_random)
-# print(var_nonselect)
-
 
 suma=0
 sumk=0
@@ -434,13 +363,11 @@ if(length(ft)>2){condition=ft[length(ft)]-ft[length(ft)-1]}else{condition=10}
 
 
 }#fin while
-
+	
 uchap=NULL
 for(k in 1:q)
 {uchap=c(uchap,get(paste("uchap",k,sep="_")))}
-	
-#print(compteur_ijk)
-
+		
 SIGMAU=rbind(SIGMAU,sigma_u)
 SIGMAE=c(SIGMAE,sigma_e)
 BETA_HAT[,alph]=beta_hat
@@ -448,23 +375,31 @@ kchap=c(kchap,length(ind))
 UCHAP=cbind(UCHAP,uchap)
 y.fitted=cbind(y.fitted,yhatt)
 COMPTEUR=c(COMPTEUR,compteur_ijk)
-}#fin alph
-#aV=array(0,c(length(alpha),maxqdep,dim_X,compteurordre)) #on y met tous les quantiles
-#for(i in 1:compteurordre){aV[,,,i]=get(paste("aV",i,sep="_"))}
 
-rownames(aV)=paste("alpha=",alpha)
-colnames(aV)=paste("Hk,",0:(maxqdep-1))
-dimnames(aV)[[3]]=paste("ktest=",(var_nonselect!=0):(dim_X-(var_nonselect==0)))
-dimnames(aV)[[4]]=paste("ordre",1:compteurordre)
+d=numeric(0)
+for(k in 1:q)
+{d=c(d,as.vector(sigma_u)[k])}
+Psi=diag(d,q)
+PSI[,,alph]=Psi
+
+}#fin alph
+
+rownames(aV2)=paste("alpha=",alpha)
+colnames(aV2)=paste("Hk,",0:(maxqdep-1))
+dimnames(aV2)[[3]]=paste("ktest=",(var_nonselect!=0):(dim_X-(var_nonselect==0)))
+dimnames(aV2)[[4]]=paste("ordre",1:compteurordre)
 
 colnames(y.fitted)=alpha
 #on doit faire une liste avec tous les quantiles utiles
 rownames(ORDREBETA2)=paste("ordre",1:compteurordre)
 colnames(BETA_HAT)=alpha
 
-out=list(data=list(X=data,Y=Y,z=z,grp=grp),beta=BETA_HAT,fitted.values=y.fitted,u=UCHAP,sigma_u=SIGMAU,sigma_e=SIGMAE,it=COMPTEUR,quantile=aV,ordrebeta=ORDREBETA2,converge=converge,call=match.call(),arg=list(var_nonselect_fixed=var_nonselect_fixed,var_nonselect_random_sauv=var_nonselect_random_sauv,step=step,maxordre=maxordre,choix_ordre=choix_ordre,m=m,random=random,showordre=showordre,IT=IT,maxqdep=maxqdep,showtest=showtest,showresult=showresult,showit=showit))
+show=c(showordre,showresult,showit)	
+
+out=list(data=list(X=data,Y=Y,z=z,grp=grp),beta=BETA_HAT,fitted.values=y.fitted,u=UCHAP,Psi=PSI,sigma_e=SIGMAE,it=COMPTEUR,quantile=aV2,ordrebeta=ORDREBETA2,converge=converge,call=match.call(),arg=object$arg)
 
 out
-structure(out,class="proctestMM")
+structure(out,class=c("proctestMM","proctestMM_diag"))
 
-}
+		
+}#fin refit procbol
