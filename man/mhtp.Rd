@@ -1,11 +1,11 @@
-\name{proctestMM}
-\alias{proctestMM}
+\name{mhtp}
+\alias{mhtp}
 \docType{package}
 \title{
 Multiple testing procedure for variable selection in linear mixed models}
 \description{
 Performs a multiple hypotheses testing in linear mixed models}
-\usage{proctestMM(data,Y,z,grp,D,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed)
+\usage{mhtp(data,Y,z,grp,D,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed)
 }
 
 \arguments{
@@ -19,7 +19,7 @@ Performs a multiple hypotheses testing in linear mixed models}
 \item{alpha}{A user supplied type I error sequence. Default is (0.1,0.05).}
 \item{step}{The algorithm performs at most \code{step} iterations. Default is 3000.}
 \item{num}{Number of variables one wishes to order. Default is min(n-1,p-1,30).}
-\item{ordre}{Three possible algorithms to order the variables. "bolasso" uses the regularization path of the Bolasso technique, "pval" uses the p-values from the test of nullity of the coefficients obtained from a linear regression on the full set of variables (only when p<n), the last "pval_hd" makes regression on one variable at a time. Default is "bolasso".}
+\item{ordre}{Several possible algorithms to order the variables, ordre=c("bolasso","pval","pval_hd","FR"). "bolasso" uses the dyadic algorithm with the Bolasso techniaue, "pval" uses the p-values obtained with a regression on the full set of variables (only when p<n), "pval_hd" uses marginal regression, "FR" uses Forward Regression. Default is "bolasso".}
 \item{m}{Number of bootstrapped iteration of the Lasso. Only use if the algorithm is set to "bolasso". Default is m=10.}
 \item{show}{Vector of logical values, \code{show=(showordre,showresult,showit)}. Default is (0,0,0). If \code{showordre}=TRUE, show the ordered variables at each step of the algorithm.
 if \code{showresult}=TRUE, show the value of the statistics and the estimated quantile at each step of the procedure; if \code{ordre}=bolasso.
@@ -30,13 +30,13 @@ if \code{showit}=TRUE, show the iterations of the algorithm.}
 }
 
 
-\details{\code{proctestMM} performs fixed effects selection in linear mixed models. 
-It is a combination of the \link{procbol} function from the \link{mht-package} with the algorithm used in the \link{lassoMM} function;
-so you might want to have a look at the help of \link{procbol}.
+\details{\code{mhtp} performs fixed effects selection in linear mixed models.
+It is a combination of the \link{mht} function from the \link{mht-package} with the algorithm used in the \link{lassop} function;
+so you might want to have a look at the help of \link{mht}.
 
 }
 
-\value{A 'proctestMM' object is returned for which \code{refit} is available.
+\value{A 'mhtp' object is returned for which \code{refit} is available.
 \item{data}{List of the user-data: the scaled matrix used in the algorithm, the first column being (1,...,1); Y; z and grp.}
 \item{beta}{The estimated vector of fixed effects coefficients. Each row concern a specific user level alpha.}
 \item{fitted.values}{Fitted values calculated with the fixed effects and the random effects.}
@@ -51,7 +51,7 @@ so you might want to have a look at the help of \link{procbol}.
 \item{arg}{List of all the arguments of the function (used to refit the function).}
 }
 
-\seealso{\code{\link{procbol}}, \code{\link{refit.proctestMM}}}
+\seealso{\code{\link{mht}}, \code{\link{refit.mhtp}}}
 
 \examples{
 \dontrun{
@@ -80,7 +80,7 @@ y <- numeric(n)
 for (k in 1:n) y[k] <- x[k,]\%*\%beta + t(z[k,])\%*\%bi[,k] + epsilon[k]
 
 ########
-fit=proctestMM(x,y,z,grp,D=0,fix=1,rand=c(1,2),alpha=0.1,num=15)
-#fit=proctestMM(x,y,z,grp,D=0,fix=1,rand=c(1,2),alpha=0.1,num=15,show=c(1,1,1))
+fit=mhtp(x,y,z,grp,D=0,fix=1,rand=c(1,2),alpha=0.1,num=15)
+#fit=mhtp(x,y,z,grp,D=0,fix=1,rand=c(1,2),alpha=0.1,num=15,show=c(1,1,1))
 }
 }

@@ -1,9 +1,9 @@
 import(mht)
 import(glmnet)
 import(Matrix)
-export(lassoMM,lmme,proctestMM) 
+export(lassop,lmme,mhtp) 
 
-S3method(refit, proctestMM)
-S3method(print, proctestMM)
-S3method(print, lassoMM)
+S3method(refit, mhtp)
+S3method(print, mhtp)
+S3method(print, lassop)
 S3method(print, lmme)

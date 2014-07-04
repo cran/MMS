@@ -1,4 +1,4 @@
-proctestMM_nodiag=function(data,Y,z,grp,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed)
+mhtp_nodiag=function(data,Y,z,grp,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed)
 {
 #-----------------------------------	
 #	data=matrice data, the first column should be 1, for the intercept
@@ -146,7 +146,7 @@ rand_sauv=rand
 		
 		if(showit){print("initialization")}
 
-	a=procbol(data2,Y,sigma=q,m=m,maxordre=num,ordre=ordre,var_nonselect=var_nonselect,maxq=maxq,alpha=alpha,show=c(showordre,0,showresult))
+	a=mht(data2,Y,sigma=q,m=m,maxordre=num,ordre=ordre,var_nonselect=var_nonselect,maxq=maxq,alpha=alpha,show=c(showordre,0,showresult))
 	compteurordre=compteurordre+1
 	b=a$ordre
 	bb=correspondance[2,b]
@@ -405,6 +405,6 @@ show=c(showordre,showresult,showit)
 out=list(data=list(X=data,Y=Y,z=z,grp=grp),beta=BETA_HAT,fitted.values=y.fitted,u=UCHAP,Psi=PSI,sigma_e=SIGMAE,it=COMPTEUR,quantile=aV,ordrebeta=ORDREBETA2,converge=converge,call=match.call(),arg=list(fix=fix,rand_sauv=rand_sauv,step=step,num=num,ordre=choix_ordre,m=m,random=random,show=show,IT=IT,maxqdep=maxqdep))
 
 out
-structure(out,class=c("proctestMM","proctestMM_nodiag"))
+structure(out,class=c("mhtp","mhtp_nodiag"))
 
 }

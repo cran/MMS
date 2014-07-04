@@ -16,9 +16,9 @@ Date: \tab 2013-08-09 \cr
 License: \tab GPL-3 \cr
 }
 Two major functions:\cr
-\code{\link{lassoMM}} performs fixed effects selection in linear mixed models through a L1-penalization of the log-likelihood of the marginal model. The method optimizes a criterion via a multicycle ECM algorithm. \cr
-\code{\link{proctestMM}} performs fixed effects selection in linear mixed models through a modification of the previous algorithm which allows the use of any variable selection method developed in linear models. 
-It is a combination of the \code{\link{procbol}} method from the \code{\link{mht-package}} and the modified algorithm.}
+\code{\link{lassop}} performs fixed effects selection in linear mixed models through a L1-penalization of the log-likelihood of the marginal model. The method optimizes a criterion via a multicycle ECM algorithm. \cr
+\code{\link{mhtp}} performs fixed effects selection in linear mixed models through a modification of the previous algorithm which allows the use of any variable selection method developed in linear models.
+It is a combination of the \code{\link{mht}} method from the \code{\link{mht-package}} and the modified algorithm.}
 
 \author{
 Florian Rohart \cr
@@ -59,10 +59,10 @@ y <- numeric(n)
 for (k in 1:n) y[k] <- x[k,]\%*\%beta + t(z[k,])\%*\%bi[,k] + epsilon[k]
 ######
 fit0=lmme(x[,1:4],y,z,grp)
-fit1=lassoMM(x,y,z,grp,mu=0.2,fix=1,rand=c(1,2))
-#fit1=lassoMM(x,y,z,grp,mu=0.2,fix=1,rand=c(1,2),showit=TRUE)
+fit1=lassop(x,y,z,grp,mu=0.2,fix=1,rand=c(1,2))
+#fit1=lassop(x,y,z,grp,mu=0.2,fix=1,rand=c(1,2),showit=TRUE)
 
-fit2=proctestMM(x,y,z,grp,fix=1,rand=c(1,2),alpha=0.1,num=15)
-#fit2=proctestMM(x,y,z,grp,fix=1,rand=c(1,2),alpha=0.1,num=15,show=c(1,1,1))
+fit2=mhtp(x,y,z,grp,fix=1,rand=c(1,2),alpha=0.1,num=15)
+#fit2=mhtp(x,y,z,grp,fix=1,rand=c(1,2),alpha=0.1,num=15,show=c(1,1,1))
 }
 }

@@ -53,6 +53,32 @@ if(showit){print(bb)}
 XI_ord=data2[,b] #on a ainsi les XI ordonnées dans XI_ord
 }
 
+if(choix_ordre=="FR")
+{
+    ordre=1
+    ind.left=2:p
+    while(length(ordre)<min(ntot-1,p,num))
+    {
+        res=NULL
+        for(i in 1:length(ind.left))
+        {
+            X=data2[,c(ordre,ind.left[i])]
+            I=diag(1,ntot)
+            H=X%*%solve(t(X)%*%X)%*%t(X)
+            res[i]=t(yhat)%*%(I-H)%*%yhat	#same as reg=lm(Y~XI[,VRAINDICE]-1); sum(reg$residuals^2)
+        }
+        a=which.min(res)
+        ordre=c(ordre,ind.left[a])
+        ind.left=ind.left[-a]
+        
+    }
+    b=ORDRE=ordre
+    for(i in 1:p)
+    {if(sum(i==b)==0){b=c(b,i)}} #on complete l'ordre par les variables restantes
+    ORDREBETA=matrix(b,nrow=1)
+    XI_ord=data2[,b] #on a ainsi les XI ordonnées dans XI_ord
+	if(showit){print(ordre)}
+}
 
 
 dec=decompbaseortho(XI_ord)
@@ -108,7 +134,7 @@ if(ktest>indice2)
 		calcul=c(calcul,0)#on met 0 si le quantile est deja calculé
 		}else{
 		if(showresult){print(paste("ktest=",ktest))}
-		quant=quantileprocbol(XI_ord,ktest,alpha,IT=IT,maxq=maxq,sigma=sigma)
+		quant=quantilemht(XI_ord,ktest,alpha,IT=IT,maxq=maxq,sigma=sigma)
 		aV[,1:maxq,ktest]=quant$quantile	
 		calcul=c(calcul,1)#on met 1 si on a calculé un quantile manquant
 		if(showresult){print(aV[,,ktest])}

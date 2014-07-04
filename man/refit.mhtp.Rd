@@ -1,16 +1,16 @@
-\name{refit.proctestMM}
-\alias{refit.proctestMM}
+\name{refit.mhtp}
+\alias{refit.mhtp}
 \docType{package}
 \title{
 Multiple testing procedure for variable selection in linear mixed models}
 \description{
 Performs a multiple hypotheses testing in linear mixed models}
 \usage{
-\method{refit}{proctestMM}(object,Ynew,z,grp,D,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed,...)
+\method{refit}{mhtp}(object,Ynew,z,grp,D,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed,...)
 }
 
 \arguments{
-\item{object}{Object of class "proctestMM".}
+\item{object}{Object of class "mhtp".}
 \item{Ynew}{Response variable of length n.}
 \item{z}{Random effects matrix. Of size n*q.}
 \item{grp}{Grouping variable of length n.}
@@ -20,7 +20,7 @@ Performs a multiple hypotheses testing in linear mixed models}
 \item{alpha}{A user supplied type I error sequence. Default is (0.1,0.05).}
 \item{step}{The algorithm performs at most \code{step} iterations. Default is 3000.}
 \item{num}{Number of variables one wishes to order. Default is min(n-1,p-1,30).}
-\item{ordre}{Three possible algorithms to order the variables. "bolasso" uses the regularization path of the Bolasso technique, "pval" uses the p-values from the test of nullity of the coefficients obtained from a linear regression on the full set of variables (only when p<n), the last "pval_hd" makes regression on one variable at a time. Default is "bolasso".}
+\item{ordre}{Several possible algorithms to order the variables, ordre=c("bolasso","pval","pval_hd","FR"). "bolasso" uses the dyadic algorithm with the Bolasso techniaue, "pval" uses the p-values obtained with a regression on the full set of variables (only when p<n), "pval_hd" uses marginal regression, "FR" uses Forward Regression. Default is "bolasso".}
 \item{m}{Number of bootstrapped iteration of the Lasso. Only use if the algorithm is set to "bolasso". Default is m=10.}
 \item{show}{Vector of logical values, show=(showordre,showresult,showit). Default is (0,0,0). If showordre==TRUE, show the ordered variables at each step of the algorithm.
 if showresult==TRUE, show the value of the statistics and the estimated quantile at each step of the procedure; if ordre=bolasso.
@@ -31,9 +31,9 @@ if showit==TRUE, show the iterations of the algorithm.}
 \item{\dots}{not used}
 }
 
-\details{See \code{\link{proctestMM}} for more details.}
+\details{See \code{\link{mhtp}} for more details.}
 
-\value{A 'proctestMM object' is returned.
+\value{A 'mhtp object' is returned.
 \item{data}{List of the user-data: the scaled matrix used in the algorithm, the first column being (1,...,1); Y; z and grp.}
 \item{beta}{Estimation of the selected fixed effects.}
 \item{fitted.values}{Fitted values calculated with the fixed effects and the random effects.}
@@ -48,7 +48,7 @@ if showit==TRUE, show the iterations of the algorithm.}
 \item{arg}{List of all the arguments of the function.}
 }
 
-\seealso{\code{\link{proctestMM}}}
+\seealso{\code{\link{mhtp}}}
 
 \examples{
 \dontrun{
@@ -77,7 +77,7 @@ y <- numeric(n)
 for (k in 1:n) y[k] <- x[k,]\%*\%beta + t(z[k,])\%*\%bi[,k] + epsilon[k]
 
 ########
-fit=proctestMM(x,y,z,grp,D=0,fix=1,rand=c(1,2),alpha=0.1,num=15)
+fit=mhtp(x,y,z,grp,D=0,fix=1,rand=c(1,2),alpha=0.1,num=15)
 fit2=refit(fit,Ynew=y)
 }
 }

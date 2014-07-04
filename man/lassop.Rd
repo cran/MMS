@@ -1,12 +1,12 @@
-\name{lassoMM}
-\alias{lassoMM}
+\name{lassop}
+\alias{lassop}
 \docType{package}
 \title{
  L1-penalization in linear mixed models}
 \description{
 Performs a  L1-penalization in linear mixed models}
 \usage{
-lassoMM(data,Y,z,grp,D,mu,step,fix,rand,penalty.factor,alpha,showit)
+lassop(data,Y,z,grp,D,mu,step,fix,rand,penalty.factor,alpha,showit)
 }
 
 
@@ -31,7 +31,7 @@ This function performs fixed effects selection in linear mixed models through a 
 Two algorithms are available: one when the random effects are assumed to be independent (D=TRUE) and one when they are not (D=FALSE).
 Selection on the random is only performed when D=TRUE.}
 
-\value{A 'lassoMM' object is returned.
+\value{A 'lassop' object is returned.
 \item{data}{List of the user-data: the scaled matrix used in the algorithm, the first column being (1,...,1); Y and Z, which is the design matrix of the random effects.}
 \item{beta}{Estimation of the fixed effects.}
 \item{fitted.values}{Fitted values calculated with the fixed effects and the random effects.}
@@ -71,6 +71,11 @@ y <- numeric(n)
 for (k in 1:n) y[k] <- x[k,]\%*\%beta + t(z[k,])\%*\%bi[,k] + epsilon[k]
 
 ########
-fit=lassoMM(x,y,z,grp,D=1,mu=0.2,fix=1,rand=c(1,2))
+
+#independent random effects
+fit=lassop(x,y,z,grp,D=1,mu=0.2,fix=1,rand=c(1,2))
+
+#dependent random effects
+fit=lassop(x,y,z,grp,mu=0.2,fix=1,rand=c(1,2))
 }
 }

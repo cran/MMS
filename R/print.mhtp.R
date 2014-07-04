@@ -1,4 +1,4 @@
-print.proctestMM <-
+print.mhtp <-
 function(x,...) {
     # 0. part
     print(x$call)
