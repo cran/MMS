@@ -1,6 +1,9 @@
 import(mht)
 import(glmnet)
 import(Matrix)
+importFrom("stats", "lm", "runif", "var")
+importFrom("utils", "packageDescription")
+
 export(lassop,lmme,mhtp) 
 
 S3method(refit, mhtp)

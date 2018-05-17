@@ -15,7 +15,7 @@ if(choix_ordre=="pval")
 		a[1:var_nonselect]=0	#on ne selectionne pas l'intercept
 		b=sort(a,index.return=TRUE)
 		ORDREBETA=b$ix[1:num]
-		XI_ord=data2[,b$ix] #on a ainsi les XI ordonnÈes
+		XI_ord=data2[,b$ix] #on a ainsi les XI ordonnees
 		if(showit){print(b$ix)}
 		}else{		#on calcule pval avec FDR2: une regression pour chaque variable
 			print("p>n, the order 'pval' is not possible, 'pval_hd' is used instead")
@@ -34,13 +34,13 @@ if(choix_ordre=="pval_hd")
 	a[1:var_nonselect]=0	#on ne selectionne pas l'intercept
 	b=sort(a,index.return=TRUE)
 		ORDREBETA=b$ix[1:num]
-	XI_ord=data2[,b$ix] #on a ainsi les XI ordonnÈes
+	XI_ord=data2[,b$ix] #on a ainsi les XI ordonnees
 	if(showit){print(b$ix)}
 }
 
 if(choix_ordre=="bolasso")
 {
-ordre=dyadiqueordre(data2,yhat,m,maxordre=num,var_nonselect=var_nonselect,showtest=FALSE,showordre=FALSE,random=random)# donne l'ordre (dans ordre) et le nombre de fois ou l'algo a redemarré (dans prob)	
+ordre=dyadiqueordre(data2,yhat,m,maxordre=num,var_nonselect=var_nonselect,showtest=FALSE,showordre=FALSE,random=random)# donne l'ordre (dans ordre) et le nombre de fois ou l'algo a redemarre (dans prob)
 	b=ordre$ordre
 bb=correspondance[2,b]
 #mean that data2[ordre]=data[correspondance[2,ordre]]=data[,bb]
@@ -50,7 +50,7 @@ if(showit){print(bb)}
 	a=match(1:p,b)
 	b=c(b,(1:p)[which(is.na(a))])
 	
-XI_ord=data2[,b] #on a ainsi les XI ordonnées dans XI_ord
+XI_ord=data2[,b] #on a ainsi les XI ordonnees dans XI_ord
 }
 
 if(choix_ordre=="FR")
@@ -76,13 +76,13 @@ if(choix_ordre=="FR")
     for(i in 1:p)
     {if(sum(i==b)==0){b=c(b,i)}} #on complete l'ordre par les variables restantes
     ORDREBETA=matrix(b,nrow=1)
-    XI_ord=data2[,b] #on a ainsi les XI ordonnées dans XI_ord
+    XI_ord=data2[,b] #on a ainsi les XI ordonnees dans XI_ord
 	if(showit){print(ordre)}
 }
 
 
 dec=decompbaseortho(XI_ord)
-#on rajoute dans nonind2 les dernieres variables, celle qui n'ont pas d'utilitÈs puisque dans Rn
+#on rajoute dans nonind2 les dernieres variables, celle qui n'ont pas d'utilites puisque dans Rn
 nonind=dec$nonind
 U=dec$U
 if(p>(ntot+length(nonind)))
@@ -109,7 +109,7 @@ aV=array(0,c(length(alpha),maxq,dim_X)) #on y met tous les quantiles
 	while((T>0)&&(dim_X>ktest+1))
 		{
 		maxq=min(log(min(ntot,dim_X)-ktest-1,2),maxqdep)
-	#on est a ktest fixé, on regarde dans tout ce qu'on a fait avant ou indice>ktest si on a deja calculé le quantile
+	#on est a ktest fixe, on regarde dans tout ce qu'on a fait avant ou indice>ktest si on a deja calcule le quantile
 
 	#on a indice de longueur compteur-1, aV_compteur avec les quantiles, var_select de dim compteur-1, et ORDREBETA2 
 if(ktest>indice2)
@@ -131,12 +131,12 @@ if(ktest>indice2)
 
 	if(length(I)!=0)
 	{	aV[,,ktest]=aV2[,,ktest,I]
-		calcul=c(calcul,0)#on met 0 si le quantile est deja calculé
+		calcul=c(calcul,0)#on met 0 si le quantile est deja calcule
 		}else{
 		if(showresult){print(paste("ktest=",ktest))}
 		quant=quantilemht(XI_ord,ktest,alpha,IT=IT,maxq=maxq,sigma=sigma)
 		aV[,1:maxq,ktest]=quant$quantile	
-		calcul=c(calcul,1)#on met 1 si on a calculé un quantile manquant
+		calcul=c(calcul,1)#on met 1 si on a calcule un quantile manquant
 		if(showresult){print(aV[,,ktest])}
 		}
 indice2=indice2+1
@@ -150,7 +150,7 @@ indice2=indice2+1
 			b=a>aV[alph,m+1,ktest]#F #1 si on doit rejeter le test, 0 sinon
 			bb=c(bb,b) #on met tous les tests de Hk
 			}
-		if(length(which(bb!=0))>0) #securitÈ a la base, inutile maintenant? a verifier
+		if(length(which(bb!=0))>0) #securite a la base, inutile maintenant? a verifier
 			{bb[-which(bb!=0)]=0}else{bb=matrix(0,1,m)}
 		
 		if(sum(bb)>0){T=1
@@ -168,7 +168,7 @@ indice2=indice2+1
 	}#fin while
 if(ktest==dim_X){k0=dim_X}else{k0=ktest}
 
-NBR=nbr_test #rÈsultat contenant le nombre de variables sÈlectionnÈes
+NBR=nbr_test #resultat contenant le nombre de variables selectionnees
 NBR_effect=k0
 
 

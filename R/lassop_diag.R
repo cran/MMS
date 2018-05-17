@@ -4,16 +4,15 @@ lassop_diag=function(data,Y,z,grp,mu,step,fix,rand,penalty.factor,alpha,showit)
 	#-----------------------------------	
 #	data=matrice data, the first column should be 1, for the intercept
 #	Y=observation	Y=data*beta
-#	z=random effects matrix, n*q, c'est la matrice à partager en trnasformer en matrice de structure Z
+#	z=random effects matrix, n*q, c'est la matrice a partager en trnasformer en matrice de structure Z
 #	grp= groups, q*n, o autorise plusieurs structures, donc q lignes
 #	mu=regularization parameter
-#	fix= le nombre de variables qu'on ne veut pas séléctionner, ce sont les premières colonnes dans data
-#	rand= si z contient des variables à la fois fixes et aléatoires, il est conseillé de ne pas les soumettre à séléction. un vecteur de longueur q, 0 si la variable n'est pas fixe+aléatoire, sa position dans data sinon.
+#	fix= le nombre de variables qu'on ne veut pas selectionner, ce sont les premieres colonnes dans data
+#	rand= si z contient des variables a la fois fixes et aleatoires, il est conseille de ne pas les soumettre a selection. un vecteur de longueur q, 0 si la variable n'est pas fixe+aleatoire, sa position dans data sinon.
 #	penalty.factor=Separate penalty factors can be applied to each coefficient. This is a number that multiplies lambda to allow differential shrinkage. Can be 0 for some variables, which implies no shrinkage, and that variable is always included in the model. Default is 1 for all variables that are not in rand and in 1:fix.
-# 	The elasticnet mixing parameter, with 0<α≤ 1. The penalty is defined as
-#		(1-α)/2||β||_2^2+α||β||_1.
-#alpha=1 is the lasso penalty.
-#	showit=affiche les itérations de l'algorithme
+# 	The elasticnet mixing parameter, with 0<a<1. The penalty is defined as (1-a)/2|b|_2^2+a|b|_1
+#   alpha=1 is the lasso penalty.
+#	showit=affiche les iterations de l'algorithme
 #-----------------------------------------
 	
 ntot=nrow(data)	
@@ -41,7 +40,7 @@ for(k in I)
 	
 
 #		-------------------------------------
-#			on scale la matrice de départ
+#			on scale la matrice de depart
 #		-------------------------------------
 
 #si la matrice de depart ne contient pas l'intercept (colonne de 1) on la rajoute et on rajoute 1 dans var_nonselect s'il n'etait pas manquant
@@ -63,14 +62,14 @@ if(fix<=0){stop("var_nonselect has to be positive, the intercept is not submitte
 
 if(!intercept){rand[rand!=0]=rand[rand!=0]+1}
 
-#on met a 0 les variables qui resteront non selectionnées car deja dans fix
+#on met a 0 les variables qui resteront non selectionnees car deja dans fix
 for(i in rand)
 {if(i<=fix)
 	{rand[which(rand==i)]=0}}
 
 p=ncol(data)
 
-#construction des Z_i à partir de z et grp
+#construction des Z_i a partir de z et grp
 grp=rbind(grp)
 for(k in 1:q)
 {
@@ -98,7 +97,7 @@ assign(paste("Z",k,sep="_"),Z)
 sigma_uinit=rep(1,q)
 sigma_u=sigma_uinit
 
-#on cherche le nombre de variables fixes+aléatoires
+#on cherche le nombre de variables fixes+aleatoires
 a=table(rand)
 b=names(a)[names(a)!=0]
 set_random=b#[b!=1]#on enleve l'intercept, parce qu'il sera tjs dans les fixes, on ne le compte pas dans fixes+aleatoire
@@ -107,7 +106,7 @@ set_random=b#[b!=1]#on enleve l'intercept, parce qu'il sera tjs dans les fixes, 
 # alg51bolm
 ###########################
 
-	Iq=1:q #set des effets aléatoire non nul
+	Iq=1:q #set des effets aleatoire non nul
 	nonIq=numeric(0)	
 	sigma_e=1
 	
@@ -125,7 +124,7 @@ set_random=b#[b!=1]#on enleve l'intercept, parce qu'il sera tjs dans les fixes, 
 	}
 	vec[as.numeric(set_random)]=0
 
-	#on cherche beta en faisant un lasso a sigma_u et u fixé
+	#on cherche beta en faisant un lasso a sigma_u et u fixe
 	a=glmnet(data,Y,family="gaussian",lambda=mu*sigma_e,penalty.factor=vec,alpha=alpha)
 	ind=which(as.vector(a$beta)!=0)
 	ind=c(1,ind)
@@ -189,7 +188,7 @@ yhat=as.vector(Y-Z%*%uchap)
 	vec[as.numeric(set_random)]=0
 
 	
-#on cherche beta en faisant un lasso a sigma_u et u fixé
+#on cherche beta en faisant un lasso a sigma_u et u fixe
 a=glmnet(data,yhat,alpha=alpha,family="gaussian",lambda=mu*sigma_e,penalty.factor=vec)
 ind=which(as.vector(a$beta)!=0)
 ind=c(1,ind)
@@ -265,7 +264,7 @@ for(k in Iq)
 }
 
 
-#on calcule sigma_e sur les résidus du modele
+#on calcule sigma_e sur les residus du modele
 sumk=Z%*%uchap
 yhatt=data%*%beta_hat+sumk
 
@@ -279,7 +278,7 @@ sigma_u=sigma_utemp
 if(showit){print(paste("sigma_u=",sigma_utemp))
 	print(paste("sigma_e=",sigma_e))}
 	
-#on supprime les effets alétoire nul de Iq
+#on supprime les effets aletoire nul de Iq
 for(k in Iq)
 {
 	if(var(get(paste("uchap",k,sep="_")))<10^-4*(min(sigma_e,1))){sigma_u[k]=0

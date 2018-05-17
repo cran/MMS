@@ -1,7 +1,7 @@
 refit.mhtp_nodiag=function(object,Ynew,z,grp,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,speed,...)
 {
 
-	#même Z et grp que object, seul le Y est différent
+	#meme Z et grp que object, seul le Y est different
 data=object$data$X
 if(missing(z)) z=object$data$z
 if(missing(grp)) grp=object$data$grp
@@ -10,7 +10,7 @@ p=ncol(data)
 q=ncol(z)
 
 
-	# #on reprend les mêmes argument que dans object$arg
+	# #on reprend les memes argument que dans object$arg
 if(missing(fix)) fix=object$arg$fix
 if(missing(rand)) {rand_sauv=object$arg$rand_sauv}else{rand_sauv=rand}
 if(missing(num)) num=object$arg$num
@@ -61,7 +61,7 @@ aV2[,,1:dim(object$quantile)[3],1]=object$quantile
 	indice2=cbind(indice2,c(j,k))
 	}
 	
-#construction des Z_i à partir de z et grp
+#construction des Z_i a partir de z et grp
 grp=rbind(grp)
 Ni=max(grp[1,])
 for(k in 1:q)
@@ -126,7 +126,7 @@ compteurordre=mm2$compteurordre
 		if(showresult){print(paste("number of selected variables:",length(ind)))}
 
 	
-	#on cherche le nombre de variables fixes+aléatoires
+	#on cherche le nombre de variables fixes+aleatoires
 rand=rand_sauv
 a=table(rand)
 b=names(a)[names(a)!=0]
@@ -169,7 +169,7 @@ N=ncol(Z)#}
 		compteur_ijk=compteur_ijk+1
 		if(showit){print(paste("iteration=",compteur_ijk))}
 		compteur=compteur+1
-		#on cherche beta en faisant un lasso a sigma_u et u fixé
+		#on cherche beta en faisant un lasso a sigma_u et u fixe
 		
 ##############################################################################################################
 #################################### E-step ##########################################################
@@ -196,7 +196,7 @@ if(length(set_random)>0)
 {a=c(1:fix,as.numeric(set_random),(1:p)[-c(1:fix,as.numeric(set_random))])
 	}else{a=c(1:fix,(1:p)[-c(1:fix)])}
 correspondance=rbind(correspondance,a)
-data2=data[,correspondance[2,]]		#les var_nonselect premières colonnes sont les fixed et les random
+data2=data[,correspondance[2,]]		#les var_nonselect premieres colonnes sont les fixed et les random
 #mean that data2[ordre]=data[correspondance[2,ordre]]=data[,bb]
 
 	#on ne calcule que les manquants
@@ -264,7 +264,7 @@ U=cbind(U,get(paste("uchap",k,sep="_")))
 E=t(U)%*%U #esperance condi de chaque u_i*u_j
 #print(E)
 
-#on estime G maintenant, Iq paramètre (q(q+1)/2)	
+#on estime G maintenant, Iq parametre (q(q+1)/2)
 for(i in 1:(q))
 {for(j in (i):q)
 	{
@@ -280,7 +280,7 @@ for(i in 1:(q))
 Psi1=solve(Psi)
 	
 		
-#on calcule sigma_e sur les résidus du modele
+#on calcule sigma_e sur les residus du modele
 sumk=Z%*%uchap
 yhatt=data%*%beta_hat+sumk
 

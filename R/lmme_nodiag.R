@@ -4,11 +4,11 @@ lmme_nodiag=function(data,Y,z,grp,step,showit)
 	#-----------------------------------	
 #	data=matrice data, the first column should be 1, for the intercept
 #	Y=observation	Y=data*beta
-#	z=random effects matrix, n*q, c'est la matrice à partager en trnasformer en matrice de structure Z
+#	z=random effects matrix, n*q, c'est la matrice a partager en trnasformer en matrice de structure Z
 #	grp= groups, q*n, o autorise plusieurs structures, donc q lignes
 #	diag= Psi est diagonale?
-#	showit=affiche les itérations de l'algorithme
-#	step=nombre max d'itérations de l'algorithme
+#	showit=affiche les iterations de l'algorithme
+#	step=nombre max d'iterations de l'algorithme
 #-----------------------------------------
 	
 ntot=nrow(data)	
@@ -25,7 +25,7 @@ q=ncol(z)
 
 	
 #		-------------------------------------
-#			on scale la matrice de départ
+#			on scale la matrice de depart
 #		-------------------------------------
 
 #si la matrice de depart ne contient pas l'intercept (colonne de 1) on la rajoute et on rajoute 1 dans var_nonselect s'il n'etait pas manquant
@@ -45,7 +45,7 @@ if(sum(data[,1])==ntot){data=cbind(data[,1],scale(data[,-1])*sqrt(ntot)/sqrt(nto
 p=ncol(data)
 
 
-#construction des Z_i à partir de z et grp
+#construction des Z_i a partir de z et grp
 grp=rbind(grp)
 Ni=max(grp[1,])
 for(k in 1:q)
@@ -168,7 +168,7 @@ U=cbind(U,get(paste("uchap",k,sep="_")))
 E=t(U)%*%U #esperance condi de chaque u_i*u_j
 #print(E)
 
-#on estime G maintenant, Iq paramètre (q(q+1)/2)	
+#on estime G maintenant, Iq parametre (q(q+1)/2)	
 for(i in 1:(q))
 {for(j in (i):q)
 	{
@@ -184,7 +184,7 @@ for(i in 1:(q))
 Psi1=solve(Psi)
 	
 		
-#on calcule sigma_e sur les résidus du modele
+#on calcule sigma_e sur les residus du modele
 sumk=Z%*%uchap
 yhatt=data%*%beta_hat+sumk
 

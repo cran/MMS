@@ -4,11 +4,11 @@ lmme_diag=function(data,Y,z,grp,step,showit)
 	#-----------------------------------	
 #	data=matrice data, the first column should be 1, for the intercept
 #	Y=observation	Y=data*beta
-#	z=random effects matrix, n*q, c'est la matrice à partager en trnasformer en matrice de structure Z
+#	z=random effects matrix, n*q, c'est la matrice a partager en trnasformer en matrice de structure Z
 #	grp= groups, q*n, o autorise plusieurs structures, donc q lignes
 #	diag= Psi est diagonale?
-#	showit=affiche les itérations de l'algorithme
-#	step=nombre max d'itérations de l'algorithme
+#	showit=affiche les iterations de l'algorithme
+#	step=nombre max d'iterations de l'algorithme
 #-----------------------------------------
 	
 ntot=nrow(data)	
@@ -25,7 +25,7 @@ q=ncol(z)
 
 	
 #		-------------------------------------
-#			on scale la matrice de départ
+#			on scale la matrice de depart
 #		-------------------------------------
 
 #si la matrice de depart ne contient pas l'intercept (colonne de 1) on la rajoute et on rajoute 1 dans var_nonselect s'il n'etait pas manquant
@@ -42,7 +42,7 @@ if(sum(data[,1])==ntot){data=cbind(data[,1],scale(data[,-1])*sqrt(ntot)/sqrt(nto
 			
 p=ncol(data)
 
-#construction des Z_i à partir de z et grp
+#construction des Z_i a partir de z et grp
 grp=rbind(grp)
 for(k in 1:q)
 {
@@ -76,7 +76,7 @@ sigma_u=sigma_uinit
 ###########################
 
 
-	Iq=1:q #set des effets aléatoire non nul
+	Iq=1:q #set des effets aleatoire non nul
 	nonIq=numeric(0)
 	
 	sigma_e=1
@@ -195,7 +195,7 @@ for(k in Iq)
 }
 
 
-#on calcule sigma_e sur les résidus du modele
+#on calcule sigma_e sur les residus du modele
 sumk=Z%*%uchap
 yhatt=data%*%beta_hat+sumk
 
@@ -209,7 +209,7 @@ sigma_u=sigma_utemp
 if(showit){print(paste("sigma_u=",sigma_utemp))
 	print(paste("sigma_e=",sigma_e))}
 	
-#on supprime les effets alétoire nul de Iq
+#on supprime les effets aletoire nul de Iq
 for(k in Iq)
 {
 		if(var(get(paste("uchap",k,sep="_")))<(10^-4*sigma_e)){sigma_u[k]=0

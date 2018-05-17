@@ -3,27 +3,27 @@ mhtp_nodiag=function(data,Y,z,grp,fix,rand,alpha,step,num,ordre,m,show,IT,maxq,s
 #-----------------------------------	
 #	data=matrice data, the first column should be 1, for the intercept
 #	Y=observation	Y=data*beta
-#	z=random effects matrix, n*q, c'est la matrice à partager en transformer en matrice de structure Z. Si des effets aléatoires sont aussi des colonnes de data, elles doivent etre en premier dans z et il est conseillé de les dénombrer dans rand
+#	z=random effects matrix, n*q, c'est la matrice a partager en transformer en matrice de structure Z. Si des effets aleatoires sont aussi des colonnes de data, elles doivent etre en premier dans z et il est conseille de les denombrer dans rand
 #	grp= groups, q*n, on autorise plusieurs structures, donc q lignes
-#	fix= le nombre de variables qu'on ne veut pas sélectionner, ce sont les premières colonnes dans data
-#	rand= si z contient des variables à la fois fixes et aléatoires, il est conseillé de ne pas les soumettre à sélection. un vecteur de longueur q, 0 si la variable n'est pas fixe+aléatoire, sa position dans data sinon.
+#	fix= le nombre de variables qu'on ne veut pas selectionner, ce sont les premieres colonnes dans data
+#	rand= si z contient des variables a la fois fixes et aleatoires, il est conseille de ne pas les soumettre a selection. un vecteur de longueur q, 0 si la variable n'est pas fixe+aleatoire, sa position dans data sinon.
 
-#	alpha=erreur de première espèce du test
+#	alpha=erreur de premiere espece du test
 #	step=number of max steps of the algorithm
 #	num= nombre de variables max qu'on ordonne
-#	ordre=avec quelle méthode on ordonne (pval, pval_hd ou bolasso)
+#	ordre=avec quelle methode on ordonne (pval, pval_hd ou bolasso)
 #	m=nombre d'iteration bootstrap pour le bolasso
 #	IT=nombre de simulations pour le calcul du quantile
 #	maxq=nombre max d'hypotheses alternative testees
 #	show=c(showordre,showresult,showit). 
-	#	showordre=affiche l'ordre au fur et à mesure
+	#	showordre=affiche l'ordre au fur et a mesure
 	#	showresult=affiche les resultats des tests
-	#	showit=affiche les itérations de l'algorithme
+	#	showit=affiche les iterations de l'algorithme
 #	speed=c(0,1). Should the algorithm be speed up once everything but the lokelihood has "converged"?
 #-----------------------------------------
 	
 	
-	#probleme: si random=1:3,donc ordre= (1 2 3) 34 etc et qu'on supprime le 3 des random mais qu'il reste en 3eme position une fois ordonné, on zap le calcul du quantile pour l'ordre (1,2) 3 etc, a vérifier
+	#probleme: si random=1:3,donc ordre= (1 2 3) 34 etc et qu'on supprime le 3 des random mais qu'il reste en 3eme position une fois ordonne, on zap le calcul du quantile pour l'ordre (1,2) 3 etc, a verifier
 	
 ntot=nrow(data)	
 p=ncol(data)
@@ -60,7 +60,7 @@ for(k in I)
 
 
 #		-------------------------------------
-#			on scale la matrice de départ
+#			on scale la matrice de depart
 #		-------------------------------------
 
 #si la matrice de depart ne contient pas l'intercept (colonne de 1) on la rajoute et on rajoute 1 dans fix s'il n'etait pas manquant
@@ -85,7 +85,7 @@ if(fix<=0){stop("var_nonselect has to be positive, the intercept is not submitte
 if(!intercept){rand[rand!=0]=rand[rand!=0]+1}
 
 
-#on met a 0 les variables qui resteront non selectionnées car deja dans fix
+#on met a 0 les variables qui resteront non selectionnees car deja dans fix
 for(i in rand)
 {if(i<=fix)
 	{rand[which(rand==i)]=0}}
@@ -99,7 +99,7 @@ ntot=nrow(data)
 p=ncol(data)
 
 
-#construction des Z_i à partir de z et grp
+#construction des Z_i a partir de z et grp
 grp=rbind(grp)
 Ni=max(grp[1,])
 for(k in 1:q)
@@ -157,7 +157,7 @@ rand_sauv=rand
 	#on cherche dans quel espace vit data	
 	XI=data2[,a$ordrebeta]
 	dec=decompbaseortho(XI)
-	#on rajoute dans nonind2 les dernieres variables, celle qui n'ont pas d'utilitÈs puisque dans Rn
+	#on rajoute dans nonind2 les dernieres variables, celle qui n'ont pas d'utilites puisque dans Rn
 	nonind=dec$nonind
 	U=dec$U
 	if(p>(ntot+length(nonind)))
@@ -192,7 +192,7 @@ COMPTEUR=NULL
 PSI=array(0,c(q,q,length(alpha)))
 for(alph in 1:length(alpha)) #boucle sur alpha
 {
-	#on cherche le nombre de variables fixes+aléatoires
+	#on cherche le nombre de variables fixes+aleatoires
 rand=rand_sauv
 a=table(rand)
 b=names(a)[names(a)!=0]
@@ -263,7 +263,7 @@ if(length(set_random)>0)
 {a=c(1:fix,as.numeric(set_random),(1:p)[-c(1:fix,as.numeric(set_random))])
 	}else{a=c(1:fix,(1:p)[-c(1:fix)])}
 correspondance=rbind(correspondance,a)
-data2=data[,correspondance[2,]]		#les var_nonselect premières colonnes sont les fixed et les random
+data2=data[,correspondance[2,]]		#les var_nonselect premieres colonnes sont les fixed et les random
 #mean that data2[ordre]=data[correspondance[2,ordre]]=data[,bb]
 
 	#on ne calcule que les manquants
@@ -331,7 +331,7 @@ U=cbind(U,get(paste("uchap",k,sep="_")))
 E=t(U)%*%U #esperance condi de chaque u_i*u_j
 #print(E)
 
-#on estime G maintenant, Iq paramètre (q(q+1)/2)	
+#on estime G maintenant, Iq parametre (q(q+1)/2)	
 for(i in 1:(q))
 {for(j in (i):q)
 	{
@@ -347,7 +347,7 @@ for(i in 1:(q))
 Psi1=solve(Psi)
 	
 		
-#on calcule sigma_e sur les résidus du modele
+#on calcule sigma_e sur les residus du modele
 sumk=Z%*%uchap
 yhatt=data%*%beta_hat+sumk
 
